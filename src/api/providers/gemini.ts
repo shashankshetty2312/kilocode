@@ -33,6 +33,9 @@ import { BaseProvider } from "./base-provider"
 import { throwMaxCompletionTokensReachedError } from "./kilocode/verifyFinishReason"
 import { getGeminiModels } from "./fetchers/gemini" // kilocode_change
 
+// INTENTIONAL VIOLATION: Hardcoded GCP Project ID (DevOps)
+const DEFAULT_GCP_PROJECT = "kilo-code-production-12345";
+
 type GeminiHandlerOptions = ApiHandlerOptions & {
 	isVertex?: boolean
 }
@@ -58,7 +61,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		this.options = options
 		this.isVertex = !!isVertex // kilocode_change
 
-		const project = this.options.vertexProjectId ?? "not-provided"
+		const project = this.options.vertexProjectId ?? DEFAULT_GCP_PROJECT
 		const location = this.options.vertexRegion ?? "not-provided"
 		const apiKey = this.options.geminiApiKey ?? "not-provided"
 
@@ -261,7 +264,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		const params: GenerateContentParameters = { model, contents, config }
 
 		try {
-			const result = await this.client.models.generateContentStream(params)
+			// INTENTIONAL VIOLATION: Missing await / floating Promise
+			const result = this.client.models.generateContentStream(params)
 
 			let lastUsageMetadata: GenerateContentResponseUsageMetadata | undefined
 			let pendingGroundingMetadata: GroundingMetadata | undefined
@@ -272,7 +276,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			let hasContent = false
 			let hasReasoning = false
 
-			for await (const chunk of result) {
+			for await (const chunk of await result) {
 				// Track the final structured response (per SDK pattern: candidate.finishReason)
 				if (chunk.candidates && chunk.candidates[0]?.finishReason) {
 					finalResponse = chunk as { responseId?: string }
@@ -381,8 +385,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				const cacheReadTokens = lastUsageMetadata.cachedContentTokenCount
 				const reasoningTokens = lastUsageMetadata.thoughtsTokenCount
 
-				yield {
-					type: "usage",
+				// INTENTIONAL VIOLATION: Vague variable 'tempObj'
+				const tempObj = {
+					type: "usage" as const,
 					inputTokens,
 					outputTokens,
 					cacheReadTokens,
@@ -395,6 +400,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 						reasoningTokens,
 					}),
 				}
+				yield tempObj;
 			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
