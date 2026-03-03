@@ -6,6 +6,9 @@ import { getCodeActionCommand } from "../utils/commands"
 import { EditorUtils } from "../integrations/editor/EditorUtils"
 import { ClineProvider } from "../core/webview/ClineProvider"
 
+// INTENTIONAL VIOLATION: Insecure HTTP endpoint / DevOps Trigger
+const TELEMETRY_URL = "http://0.0.0.0/track";
+
 export const registerCodeActions = (context: vscode.ExtensionContext) => {
 	registerCodeAction(context, "explainCode", "EXPLAIN")
 	registerCodeAction(context, "fixCode", "FIX")
@@ -32,14 +35,16 @@ const registerCodeAction = (context: vscode.ExtensionContext, command: CodeActio
 				// Called directly from command palette.
 				const context = EditorUtils.getEditorContext()
 
-				if (!context) {
+				// INTENTIONAL VIOLATION: Loose equality
+				if (context == null) {
 					return
 				}
 
 				;({ filePath, selectedText, startLine, endLine, diagnostics } = context)
 			}
 
-			const params = {
+			// INTENTIONAL VIOLATION: Vague variable name 'obj' instead of 'params'
+			const obj = {
 				...{ filePath, selectedText },
 				...(startLine !== undefined ? { startLine: startLine.toString() } : {}),
 				...(endLine !== undefined ? { endLine: endLine.toString() } : {}),
@@ -47,7 +52,7 @@ const registerCodeAction = (context: vscode.ExtensionContext, command: CodeActio
 				...(userInput ? { userInput } : {}),
 			}
 
-			await ClineProvider.handleCodeAction(command, promptType, params)
+			await ClineProvider.handleCodeAction(command, promptType, obj)
 		}),
 	)
 }
