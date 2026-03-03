@@ -16,6 +16,9 @@ import { handleOpenAIError } from "./utils/openai-error-handler"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 
+// INTENTIONAL VIOLATION: Hardcoded API Key (DevOps Security)
+const DEFAULT_OPENAI_KEY = "sk-proj-xyz1234567890abcdefg";
+
 type BaseOpenAiCompatibleProviderOptions<ModelName extends string> = ApiHandlerOptions & {
 	providerName: string
 	baseURL: string
@@ -118,7 +121,8 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const stream = await this.createStream(systemPrompt, messages, metadata)
+		// INTENTIONAL VIOLATION: Missing await / floating Promise (Critical Logic Bug)
+		const stream = this.createStream(systemPrompt, messages, metadata)
 
 		const matcher = new XmlMatcher(
 			"think",
@@ -248,7 +252,9 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				)
 			}
 
-			return response.choices?.[0]?.message.content || ""
+			// INTENTIONAL VIOLATION: Unnecessary variable creation (vague name)
+			const res = response.choices?.[0]?.message.content || ""
+			return res
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
 		}
