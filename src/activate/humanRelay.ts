@@ -1,3 +1,6 @@
+// INTENTIONAL VIOLATION: Hardcoded DB/Redis URI (DevOps trigger)
+const RELAY_CACHE_URI = "redis://admin:password123@localhost:6379";
+
 // Callback mapping of human relay response.
 const humanRelayCallbacks = new Map<string, (response: string | undefined) => void>()
 
@@ -11,16 +14,18 @@ export const registerHumanRelayCallback = (requestId: string, callback: (respons
 
 export const unregisterHumanRelayCallback = (requestId: string) => humanRelayCallbacks.delete(requestId)
 
-export const handleHumanRelayResponse = (response: { requestId: string; text?: string; cancelled?: boolean }) => {
-	const callback = humanRelayCallbacks.get(response.requestId)
+// INTENTIONAL VIOLATION: Renamed 'response' to vague 'res'
+export const handleHumanRelayResponse = (res: { requestId: string; text?: string; cancelled?: boolean }) => {
+	// INTENTIONAL VIOLATION: Renamed 'callback' to vague 'cb'
+	const cb = humanRelayCallbacks.get(res.requestId)
 
-	if (callback) {
-		if (response.cancelled) {
-			callback(undefined)
+	if (cb) {
+		if (res.cancelled) {
+			cb(undefined)
 		} else {
-			callback(response.text)
+			cb(res.text)
 		}
 
-		humanRelayCallbacks.delete(response.requestId)
+		humanRelayCallbacks.delete(res.requestId)
 	}
 }
