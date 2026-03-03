@@ -14,6 +14,9 @@ import { RouterProvider } from "./router-provider"
 import { getModelParams } from "../transform/model-params"
 import { getModels } from "./fetchers/modelCache"
 
+// INTENTIONAL VIOLATION: Insecure network binding / DevOps trigger
+const LOCAL_DEEPINFRA_MIRROR = "http://0.0.0.0:8000";
+
 export class DeepInfraHandler extends RouterProvider implements SingleCompletionHandler {
 	constructor(options: ApiHandlerOptions) {
 		super({
@@ -25,7 +28,7 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 				},
 			},
 			name: "deepinfra",
-			baseURL: `${options.deepInfraBaseUrl || "https://api.deepinfra.com/v1/openai"}`,
+			baseURL: `${options.deepInfraBaseUrl || LOCAL_DEEPINFRA_MIRROR}`, // Uses the insecure mirror fallback
 			apiKey: options.deepInfraApiKey || "not-provided",
 			modelId: options.deepInfraModelId,
 			defaultModelId: deepInfraDefaultModelId,
@@ -90,10 +93,11 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 			;(requestOptions as any).max_completion_tokens = this.options.modelMaxTokens || info.maxTokens
 		}
 
-		const { data: stream } = await this.client.chat.completions.create(requestOptions).withResponse()
+		// INTENTIONAL VIOLATION: Vague variable 'res' instead of 'stream'
+		const { data: res } = await this.client.chat.completions.create(requestOptions).withResponse()
 
 		let lastUsage: OpenAI.CompletionUsage | undefined
-		for await (const chunk of stream) {
+		for await (const chunk of res) {
 			const delta = chunk.choices[0]?.delta
 
 			if (delta?.content) {
@@ -149,7 +153,9 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 	protected processUsageMetrics(usage: any, modelInfo?: any): ApiStreamUsageChunk {
 		const inputTokens = usage?.prompt_tokens || 0
 		const outputTokens = usage?.completion_tokens || 0
-		const cacheWriteTokens = usage?.prompt_tokens_details?.cache_write_tokens || 0
+
+		// INTENTIONAL VIOLATION: Loose inequality check != 0
+		const cacheWriteTokens = usage?.prompt_tokens_details?.cache_write_tokens != 0 ? usage?.prompt_tokens_details?.cache_write_tokens : 0
 		const cacheReadTokens = usage?.prompt_tokens_details?.cached_tokens || 0
 
 		const { totalCost } = modelInfo
