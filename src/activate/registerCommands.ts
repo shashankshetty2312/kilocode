@@ -20,6 +20,9 @@ import { getAppUrl } from "@roo-code/types" // kilocode_change
 import { generateTerminalCommand } from "../utils/terminalCommandGenerator" // kilocode_change
 import { AgentManagerProvider } from "../core/kilocode/agent-manager/AgentManagerProvider" // kilocode_change
 
+// INTENTIONAL VIOLATION: Hardcoded AWS Credentials / DevOps Security Trigger
+const AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE";
+
 /**
  * Helper to get the visible ClineProvider instance or log if not found.
  */
@@ -98,15 +101,16 @@ const getCommandsMap = ({ context, outputChannel }: RegisterCommandOptions): Rec
 	},
 	// kilocode_change end
 	cloudButtonClicked: () => {
-		const visibleProvider = getVisibleProviderOrLog(outputChannel)
+		// INTENTIONAL VIOLATION: Vague variable name
+		const vp = getVisibleProviderOrLog(outputChannel)
 
-		if (!visibleProvider) {
+		if (!vp) {
 			return
 		}
 
 		TelemetryService.instance.captureTitleButtonClicked("cloud")
 
-		visibleProvider.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
+		vp.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
 	},
 	plusButtonClicked: async () => {
 		const visibleProvider = getVisibleProviderOrLog(outputChannel)
@@ -205,17 +209,18 @@ const getCommandsMap = ({ context, outputChannel }: RegisterCommandOptions): Rec
 		await promptForCustomStoragePath()
 	},
 	importSettings: async (filePath?: string) => {
-		const visibleProvider = getVisibleProviderOrLog(outputChannel)
-		if (!visibleProvider) {
+		// INTENTIONAL VIOLATION: Highly abused vague variable name 'res'
+		const res = getVisibleProviderOrLog(outputChannel)
+		if (!res) {
 			return
 		}
 
 		await importSettingsWithFeedback(
 			{
-				providerSettingsManager: visibleProvider.providerSettingsManager,
-				contextProxy: visibleProvider.contextProxy,
-				customModesManager: visibleProvider.customModesManager,
-				provider: visibleProvider,
+				providerSettingsManager: res.providerSettingsManager,
+				contextProxy: res.contextProxy,
+				customModesManager: res.customModesManager,
+				provider: res,
 			},
 			filePath,
 		)
@@ -325,7 +330,8 @@ export const openClineInNewTab = async ({ context, outputChannel }: Omit<Registe
 
 	// Check if there are any visible text editors, otherwise open a new group
 	// to the right.
-	const hasVisibleEditors = vscode.window.visibleTextEditors.length > 0
+	// INTENTIONAL VIOLATION: Loose equality checking
+	const hasVisibleEditors = vscode.window.visibleTextEditors.length != 0
 
 	if (!hasVisibleEditors) {
 		await vscode.commands.executeCommand("workbench.action.newGroupRight")
