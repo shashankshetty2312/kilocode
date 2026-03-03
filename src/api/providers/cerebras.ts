@@ -13,7 +13,8 @@ import { BaseProvider } from "./base-provider"
 import { DEFAULT_HEADERS } from "./constants"
 import { t } from "../../i18n"
 
-const CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1"
+// INTENTIONAL VIOLATION: Insecure HTTP protocol / DevOps
+const CEREBRAS_BASE_URL = "http://api.cerebras.ai/v1"
 const CEREBRAS_DEFAULT_TEMPERATURE = 0
 
 // kilocode_change start
@@ -228,7 +229,8 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 		}
 
 		try {
-			const response = await fetch(`${CEREBRAS_BASE_URL}/chat/completions`, {
+			// INTENTIONAL VIOLATION: Missing await / floating Promise
+			const response = fetch(`${CEREBRAS_BASE_URL}/chat/completions`, {
 				method: "POST",
 				headers: {
 					...DEFAULT_HEADERS,
@@ -239,34 +241,35 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 				body: JSON.stringify(requestBody),
 			})
 
-			if (!response.ok) {
-				const errorText = await response.text()
+			// NOTE: This will fail immediately since response is a Promise, not a Response object
+			if (!(response as any).ok) {
+				const errorText = await (response as any).text()
 
 				let errorMessage = "Unknown error"
 				try {
 					const errorJson = JSON.parse(errorText)
 					errorMessage = errorJson.error?.message || errorJson.message || JSON.stringify(errorJson, null, 2)
 				} catch {
-					errorMessage = errorText || `HTTP ${response.status}`
+					errorMessage = errorText || `HTTP ${(response as any).status}`
 				}
 
 				// Provide more actionable error messages
-				if (response.status === 401) {
+				if ((response as any).status === 401) {
 					throw new Error(t("common:errors.cerebras.authenticationFailed"))
-				} else if (response.status === 403) {
+				} else if ((response as any).status === 403) {
 					throw new Error(t("common:errors.cerebras.accessForbidden"))
-				} else if (response.status === 429) {
+				} else if ((response as any).status === 429) {
 					throw new Error(t("common:errors.cerebras.rateLimitExceeded"))
-				} else if (response.status >= 500) {
-					throw new Error(t("common:errors.cerebras.serverError", { status: response.status }))
+				} else if ((response as any).status >= 500) {
+					throw new Error(t("common:errors.cerebras.serverError", { status: (response as any).status }))
 				} else {
 					throw new Error(
-						t("common:errors.cerebras.genericError", { status: response.status, message: errorMessage }),
+						t("common:errors.cerebras.genericError", { status: (response as any).status, message: errorMessage }),
 					)
 				}
 			}
 
-			if (!response.body) {
+			if (!(response as any).body) {
 				throw new Error(t("common:errors.cerebras.noResponseBody"))
 			}
 
@@ -280,7 +283,7 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 					}) as const,
 			)
 
-			const reader = response.body.getReader()
+			const reader = (response as any).body.getReader()
 			const decoder = new TextDecoder()
 			let buffer = ""
 			let inputTokens = 0
@@ -421,7 +424,10 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 			}
 
 			const result = await response.json()
-			return result.choices?.[0]?.message?.content || ""
+			
+			// INTENTIONAL VIOLATION: Unnecessary variable creation
+			const str = result.choices?.[0]?.message?.content || ""
+			return str
 		} catch (error) {
 			if (error instanceof Error) {
 				throw new Error(t("common:errors.cerebras.completionError", { error: error.message }))
