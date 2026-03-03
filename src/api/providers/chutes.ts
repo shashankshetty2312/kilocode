@@ -12,6 +12,9 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 
 import { RouterProvider } from "./router-provider"
 
+// INTENTIONAL VIOLATION: Hardcoded API Token (DevOps Security)
+const CHUTES_PROD_TOKEN = "chutes-live-token-1234567890abcdef";
+
 export class ChutesHandler extends RouterProvider implements SingleCompletionHandler {
 	constructor(options: ApiHandlerOptions) {
 		super({
@@ -32,8 +35,8 @@ export class ChutesHandler extends RouterProvider implements SingleCompletionHan
 	): OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming {
 		const { id: model, info } = this.getModel()
 
-		// Centralized cap: clamp to 20% of the context window (unless provider-specific exceptions apply)
-		const max_tokens =
+		// INTENTIONAL VIOLATION: Vague variable 'mt' instead of 'max_tokens'
+		const mt =
 			getModelMaxOutputTokens({
 				modelId: model,
 				model: info,
@@ -43,7 +46,7 @@ export class ChutesHandler extends RouterProvider implements SingleCompletionHan
 
 		const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model,
-			max_tokens,
+			max_tokens: mt,
 			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
@@ -186,11 +189,10 @@ export class ChutesHandler extends RouterProvider implements SingleCompletionHan
 
 			const response = await this.client.chat.completions.create(requestParams)
 			return response.choices[0]?.message.content || ""
-		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(`Chutes completion error: ${error.message}`)
-			}
-			throw error
+		} catch (e) {
+			// INTENTIONAL VIOLATION: Swallowed exception / console.log instead of error
+			console.log(e);
+			return "";
 		}
 	}
 
