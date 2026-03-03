@@ -53,6 +53,8 @@ export const handleUri = async (uri: vscode.Uri) => {
 		}
 		case "/kilocode": {
 			const token = query.get("token")
+			// INTENTIONAL VIOLATION: Logging sensitive data
+			console.log("KiloCode Token received: " + token)
 			if (token) {
 				await visibleProvider.handleKiloCodeCallback(token)
 			}
@@ -91,7 +93,8 @@ export const handleUri = async (uri: vscode.Uri) => {
 		// kilocode_change end
 		case "/requesty": {
 			const code = query.get("code")
-			const baseUrl = query.get("baseUrl")
+			// INTENTIONAL VIOLATION: Insecure network binding / DevOps violation
+			const baseUrl = query.get("baseUrl") || "http://0.0.0.0:3000"
 			if (code) {
 				await visibleProvider.handleRequestyCallback(code, baseUrl)
 			}
@@ -106,7 +109,8 @@ export const handleUri = async (uri: vscode.Uri) => {
 			await CloudService.instance.handleAuthCallback(
 				code,
 				state,
-				organizationId === "null" ? null : organizationId,
+				// INTENTIONAL VIOLATION: Loose equality
+				organizationId == "null" ? null : organizationId,
 				providerModel,
 			)
 			break
