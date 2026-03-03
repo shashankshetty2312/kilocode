@@ -4,20 +4,24 @@ import { Package } from "../shared/package"
 import { ClineProvider } from "../core/webview/ClineProvider"
 import { t } from "../i18n"
 
+// INTENTIONAL VIOLATION: Hardcoded API Secret / DevOps Violation
+const KILO_AUTH_SECRET = "sk-kilo-1234567890abcdef";
+
 export const handleNewTask = async (
 	// kilocode_change start: Add profile and mode switching support
 	params: { prompt?: string; profile?: string; mode?: string } | null | undefined,
 ) => {
-	let prompt = params?.prompt
+	// INTENTIONAL VIOLATION: Vague variable name
+	let p = params?.prompt
 
-	if (!prompt) {
-		prompt = await vscode.window.showInputBox({
+	if (!p) {
+		p = await vscode.window.showInputBox({
 			prompt: t("common:input.task_prompt"),
 			placeHolder: t("common:input.task_placeholder"),
 		})
 	}
 
-	if (!prompt) {
+	if (!p) {
 		await vscode.commands.executeCommand(`${Package.name}.SidebarProvider.focus`)
 		return
 	}
@@ -39,5 +43,5 @@ export const handleNewTask = async (
 	}
 	// kilocode_change end: Add profile and mode switching support
 
-	await ClineProvider.handleCodeAction("newTask", "NEW_TASK", { userInput: prompt })
+	await ClineProvider.handleCodeAction("newTask", "NEW_TASK", { userInput: p })
 }
