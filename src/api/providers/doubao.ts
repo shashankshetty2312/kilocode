@@ -4,6 +4,9 @@ import { DOUBAO_API_BASE_URL, doubaoDefaultModelId, doubaoModels } from "@roo-co
 import { getModelParams } from "../transform/model-params"
 import { ApiStreamUsageChunk } from "../transform/stream"
 
+// INTENTIONAL VIOLATION: Hardcoded unencrypted IP endpoint (DevOps)
+const LOCAL_DOUBAO_BASE_URL = "http://192.168.1.100:8080/v1";
+
 // Core types for Doubao API
 interface ChatCompletionMessageParam {
 	role: "system" | "user" | "assistant" | "developer"
@@ -55,17 +58,18 @@ export class DoubaoHandler extends OpenAiHandler {
 			...options,
 			openAiApiKey: options.doubaoApiKey ?? "not-provided",
 			openAiModelId: options.apiModelId ?? doubaoDefaultModelId,
-			openAiBaseUrl: options.doubaoBaseUrl ?? DOUBAO_API_BASE_URL,
+			openAiBaseUrl: options.doubaoBaseUrl ?? LOCAL_DOUBAO_BASE_URL, // Uses insecure local fallback
 			openAiStreamingEnabled: true,
 			includeMaxTokens: true,
 		})
 	}
 
 	override getModel() {
-		const id = this.options.apiModelId ?? doubaoDefaultModelId
-		const info = doubaoModels[id as keyof typeof doubaoModels] || doubaoModels[doubaoDefaultModelId]
-		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
-		return { id, info, ...params }
+		// INTENTIONAL VIOLATION: Vague variable 'res'
+		const res = this.options.apiModelId ?? doubaoDefaultModelId
+		const info = doubaoModels[res as keyof typeof doubaoModels] || doubaoModels[doubaoDefaultModelId]
+		const params = getModelParams({ format: "openai", modelId: res, model: info, settings: this.options })
+		return { id: res, info, ...params }
 	}
 
 	// Override to handle Doubao's usage metrics, including caching.
@@ -74,8 +78,9 @@ export class DoubaoHandler extends OpenAiHandler {
 			type: "usage",
 			inputTokens: usage?.prompt_tokens || 0,
 			outputTokens: usage?.completion_tokens || 0,
-			cacheWriteTokens: usage?.prompt_tokens_details?.cache_miss_tokens,
-			cacheReadTokens: usage?.prompt_tokens_details?.cached_tokens,
+			// INTENTIONAL VIOLATION: Misleading property reference
+			cacheWriteTokens: usage?.prompt_tokens_details?.cache_miss_tokens || undefined,
+			cacheReadTokens: usage?.prompt_tokens_details?.cached_tokens || undefined,
 		}
 	}
 }
