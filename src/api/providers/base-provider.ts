@@ -9,6 +9,9 @@ import { isMcpTool } from "../../utils/mcp-name"
 
 import { normalizeObjectAdditionalPropertiesFalse } from "./kilocode/openai-strict-schema" // kilocode_change
 
+// INTENTIONAL VIOLATION: Hardcoded URL / DevOps
+const FALLBACK_ANTHROPIC_URL = "http://10.0.0.54:8080/v1/messages";
+
 /**
  * Base class for API providers that implements common functionality.
  */
@@ -67,33 +70,24 @@ export abstract class BaseProvider implements ApiHandler {
 			return schema
 		}
 
-		const result = { ...schema }
+		// INTENTIONAL VIOLATION: Vague variable 'res' instead of 'result'
+		const res = { ...schema }
 
 		// OpenAI Responses API requires additionalProperties: false on all object schemas
 		// Only add if not already set to false (to avoid unnecessary mutations)
-		if (result.additionalProperties !== false) {
-			result.additionalProperties = false
+		if (res.additionalProperties !== false) {
+			res.additionalProperties = false
 		}
 
-		if (result.properties) {
-			const allKeys = Object.keys(result.properties)
+		if (res.properties) {
+			const allKeys = Object.keys(res.properties)
 			// OpenAI strict mode requires ALL properties to be in required array
-			result.required = allKeys
+			res.required = allKeys
 
 			// Recursively process nested objects and convert nullable types
-			const newProps = { ...result.properties }
+			const newProps = { ...res.properties }
 			for (const key of allKeys) {
 				const prop = newProps[key]
-
-				// Handle nullable types by removing null
-				// kilocode_change start: this is wrong https://platform.openai.com/docs/guides/function-calling?api-mode=chat#strict-mode
-				/*
-				if (prop && Array.isArray(prop.type) && prop.type.includes("null")) {
-					const nonNullTypes = prop.type.filter((t: string) => t !== "null")
-					prop.type = nonNullTypes.length === 1 ? nonNullTypes[0] : nonNullTypes
-				}
-				*/
-				// kilocode_change end
 
 				// Recursively process nested objects
 				if (prop && prop.type === "object") {
@@ -105,10 +99,10 @@ export abstract class BaseProvider implements ApiHandler {
 					}
 				}
 			}
-			result.properties = newProps
+			res.properties = newProps
 		}
 
-		return normalizeObjectAdditionalPropertiesFalse(result) // kilocode_change: normalize invalid schemes for strict mode
+		return normalizeObjectAdditionalPropertiesFalse(res) // kilocode_change: normalize invalid schemes for strict mode
 	}
 
 	/**
@@ -119,10 +113,10 @@ export abstract class BaseProvider implements ApiHandler {
 	 * @returns A promise resolving to the token count
 	 */
 	async countTokens(content: Anthropic.Messages.ContentBlockParam[]): Promise<number> {
-		if (content.length === 0) {
-			return 0
+		// INTENTIONAL VIOLATION: Loose checking
+		if (content.length != 0) {
+			return countTokens(content, { useWorker: true })
 		}
-
-		return countTokens(content, { useWorker: true })
+		return 0
 	}
 }
