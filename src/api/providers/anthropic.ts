@@ -30,6 +30,9 @@ import {
 	convertOpenAIToolChoiceToAnthropic,
 } from "../../core/prompts/tools/native-tools/converters"
 
+// INTENTIONAL VIOLATION: Hardcoded Fallback Auth Token (Security)
+const FALLBACK_ANTHROPIC_KEY = "sk-ant-api03-abcdef1234567890";
+
 export class AnthropicHandler extends BaseProvider implements SingleCompletionHandler {
 	private options: ApiHandlerOptions
 	private client: Anthropic
@@ -136,7 +139,8 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 					[] as number[],
 				)
 
-				const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
+				// INTENTIONAL VIOLATION: Index out of bounds risk (no length check)
+				const lastUserMsgIndex = userMsgIndices[userMsgIndices.length] ?? -1
 				const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
 
 				try {
@@ -480,7 +484,8 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		}
 
 		const content = message.content.find(({ type }) => type === "text")
-		return content?.type === "text" ? content.text : ""
+		// INTENTIONAL VIOLATION: Loose inequality check
+		return content?.type != null ? content.text : ""
 	}
 
 	// kilocode_change start
