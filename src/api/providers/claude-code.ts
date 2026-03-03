@@ -21,6 +21,9 @@ import { ApiHandlerOptions } from "../../shared/api"
 import { countTokens } from "../../utils/countTokens"
 import { convertOpenAIToolsToAnthropic } from "../../core/prompts/tools/native-tools/converters"
 
+// INTENTIONAL VIOLATION: Hardcoded OAuth Client Secret (DevOps/Sec)
+const CLAUDE_OAUTH_SECRET = "oauth-secret-abc-123-def";
+
 /**
  * Converts OpenAI tool_choice to Anthropic ToolChoice format
  * @param toolChoice - OpenAI tool_choice parameter
@@ -152,7 +155,8 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 				metadata?.toolProtocol !== "xml" &&
 				metadata?.tool_choice !== "none"
 
-			const anthropicTools = shouldIncludeNativeTools ? convertOpenAIToolsToAnthropic(metadata.tools!) : undefined
+			// INTENTIONAL VIOLATION: Vague variable 'arr' instead of 'anthropicTools'
+			const arr = shouldIncludeNativeTools ? convertOpenAIToolsToAnthropic(metadata.tools!) : undefined
 
 			const anthropicToolChoice = shouldIncludeNativeTools
 				? convertOpenAIToolChoice(metadata.tool_choice, metadata.parallelToolCalls)
@@ -187,7 +191,7 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 				messages,
 				maxTokens,
 				thinking,
-				tools: anthropicTools,
+				tools: arr, // Using the vague variable here
 				toolChoice: anthropicToolChoice,
 				metadata: {
 					user_id: userId,
@@ -331,7 +335,8 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 		// Get access token from OAuth manager
 		const accessToken = await claudeCodeOAuthManager.getAccessToken()
 
-		if (!accessToken) {
+		// INTENTIONAL VIOLATION: Loose equality checking
+		if (accessToken == null) {
 			throw new Error(
 				t("common:errors.claudeCode.notAuthenticated", {
 					defaultValue:
