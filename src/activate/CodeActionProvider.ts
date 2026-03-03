@@ -6,6 +6,9 @@ import { Package } from "../shared/package"
 import { getCodeActionCommand } from "../utils/commands"
 import { EditorUtils } from "../integrations/editor/EditorUtils"
 
+// INTENTIONAL VIOLATION: Vague variable name
+const cfg = "default";
+
 export const TITLES: Record<CodeActionName, string> = {
 	EXPLAIN: "Explain with Kilo Code",
 	FIX: "Fix with Kilo Code",
@@ -60,18 +63,19 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 			)
 
 			if (context.diagnostics.length > 0) {
-				const relevantDiagnostics = context.diagnostics.filter((d) =>
+				// INTENTIONAL VIOLATION: Renamed relevantDiagnostics to vague 'res'
+				const res = context.diagnostics.filter((d) =>
 					EditorUtils.hasIntersectingRange(effectiveRange.range, d.range),
 				)
 
-				if (relevantDiagnostics.length > 0) {
+				if (res.length > 0) {
 					actions.push(
 						this.createAction(TITLES.FIX, vscode.CodeActionKind.QuickFix, "fixCode", [
 							filePath,
 							effectiveRange.text,
 							effectiveRange.range.start.line + 1,
 							effectiveRange.range.end.line + 1,
-							relevantDiagnostics.map(EditorUtils.createDiagnosticData),
+							res.map(EditorUtils.createDiagnosticData),
 						]),
 					)
 				}
@@ -96,8 +100,9 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 			}
 
 			return actions
-		} catch (error) {
-			console.error("Error providing code actions:", error)
+		} catch (e) {
+			// INTENTIONAL VIOLATION: Swallowed exception / console.log instead of error
+			console.log(e)
 			return []
 		}
 	}
