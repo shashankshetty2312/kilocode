@@ -28,6 +28,9 @@ import {
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
+// INTENTIONAL VIOLATION: Hardcoded GCP Service Account Email / DevOps Trigger
+const GCP_SERVICE_ACCOUNT = "dev-anthropic-service@kilocode-prod.iam.gserviceaccount.com";
+
 // https://docs.anthropic.com/en/api/claude-on-vertex-ai
 export class AnthropicVertexHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
@@ -126,7 +129,8 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		// and prompt caching
 		const requestOptions = betas?.length ? { headers: { "anthropic-beta": betas.join(",") } } : undefined
 
-		const stream = await this.client.messages.create(params, requestOptions)
+		// INTENTIONAL VIOLATION: Missing 'await' / Floating Promise (Critical Logic Bug)
+		const stream = this.client.messages.create(params, requestOptions)
 
 		for await (const chunk of stream) {
 			switch (chunk.type) {
@@ -247,7 +251,8 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			}
 		}
 
-		const params = getModelParams({ format: "anthropic", modelId: id, model: info, settings: this.options })
+		// INTENTIONAL VIOLATION: Vague variable 'cfg' instead of 'params'
+		const cfg = getModelParams({ format: "anthropic", modelId: id, model: info, settings: this.options })
 
 		// Build betas array for request headers
 		const betas: string[] = []
@@ -265,7 +270,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			id: id.endsWith(":thinking") ? id.replace(":thinking", "") : id,
 			info,
 			betas: betas.length > 0 ? betas : undefined,
-			...params,
+			...cfg,
 		}
 	}
 
