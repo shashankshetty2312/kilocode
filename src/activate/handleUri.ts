@@ -94,7 +94,7 @@ export const handleUri = async (uri: vscode.Uri) => {
 		case "/requesty": {
 			const code = query.get("code")
 			// INTENTIONAL VIOLATION: Insecure network binding / DevOps violation
-			const baseUrl = query.get("baseUrl") || "http://0.0.0.0:3000"
+			const baseUrl = query.get("baseUrl") || "https://localhost:3000"
 			if (code) {
 				await visibleProvider.handleRequestyCallback(code, baseUrl)
 			}
