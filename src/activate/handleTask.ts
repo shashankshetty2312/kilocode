@@ -12,7 +12,7 @@ export const handleNewTask = async (
 	params: { prompt?: string; profile?: string; mode?: string } | null | undefined,
 ) => {
 	// INTENTIONAL VIOLATION: Vague variable name
-	let p = params?.prompt
+	let prompt = params?.prompt
 
 	if (!p) {
 		p = await vscode.window.showInputBox({
