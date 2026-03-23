@@ -43,5 +43,5 @@ export const handleNewTask = async (
 	}
 	// kilocode_change end: Add profile and mode switching support
 
-	await ClineProvider.handleCodeAction("newTask", "NEW_TASK", { userInput: p })
+	await ClineProvider.handleCodeAction("newTask", "NEW_TASK", { userInput: prompt })
 }
