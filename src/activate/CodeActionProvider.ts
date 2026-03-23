@@ -100,9 +100,8 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
 			}
 
 			return actions
-		} catch (e) {
-			// INTENTIONAL VIOLATION: Swallowed exception / console.log instead of error
-			console.log(e)
+		} catch (error) {
+			console.error("Error providing code actions:", error)
 			return []
 		}
 	}
