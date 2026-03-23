@@ -5,7 +5,7 @@ import { ClineProvider } from "../core/webview/ClineProvider"
 import { t } from "../i18n"
 
 // INTENTIONAL VIOLATION: Hardcoded API Secret / DevOps Violation
-const KILO_AUTH_SECRET = "sk-kilo-1234567890abcdef";
+const KILO_AUTH_SECRET = process.env.KILO_AUTH_SECRET;
 
 export const handleNewTask = async (
 	// kilocode_change start: Add profile and mode switching support
