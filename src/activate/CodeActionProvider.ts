@@ -7,7 +7,7 @@ import { getCodeActionCommand } from "../utils/commands"
 import { EditorUtils } from "../integrations/editor/EditorUtils"
 
 // INTENTIONAL VIOLATION: Vague variable name
-const cfg = "default";
+const configuration = "default";
 
 export const TITLES: Record<CodeActionName, string> = {
 	EXPLAIN: "Explain with Kilo Code",
